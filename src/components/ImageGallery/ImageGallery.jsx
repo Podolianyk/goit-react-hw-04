@@ -1,14 +1,17 @@
+import css from "./ImageGallery.module.css";
 import ImageCard from "./../ImageCard/ImageCard";
 
-export default function ImageGaller({ images }) {
+export default function ImageGaller({ images, openModal, onAfterOpen }) {
   return (
-    <ul>
+    <ul className={css.list}>
       {images.map((image) => (
-        <ImageCard
-          key={image.id}
-          description={image.description}
-          urls={image.urls}
-        />
+        <li className={css.list_item} key={image.id}>
+          <ImageCard
+            image={image}
+            openModal={openModal}
+            onAfterOpen={onAfterOpen}
+          />
+        </li>
       ))}
     </ul>
   );

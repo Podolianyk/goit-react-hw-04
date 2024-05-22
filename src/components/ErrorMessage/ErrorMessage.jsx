@@ -1,5 +1,5 @@
-import toast, { Toaster } from "react-hot-toast";
+import css from "./ErrorMessage.module.css";
 
 export default function ErrorMessage() {
-  return toast.error("This is an error!");
+  return <p className={css.error}>This is an error! Please try again later.</p>;
 }

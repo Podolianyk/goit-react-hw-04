@@ -8,9 +8,10 @@ export default function SearchBar({ onSubmit }) {
     const value = event.target.topic.value.trim();
 
     if (!value) {
-      return toast.error("This input can't be empty!!");
+      return toast.error("This input can't be empty!");
     }
     onSubmit(value);
+    event.target.reset();
   };
 
   return (

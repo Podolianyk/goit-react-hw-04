@@ -1,32 +1,33 @@
 import { useEffect, useState } from "react";
+import { Toaster } from "react-hot-toast";
+import { getPhotos } from "./../../api.js";
 import SearchBar from "./../SearchBar/SearchBar";
 import ImageGallery from "./../ImageGallery/ImageGallery";
-import { getPhotos } from "./../../api.js";
 import Loader from "./../Loader/Loader.jsx";
 import ErrorMessage from "./../ErrorMessage/ErrorMessage.jsx";
 import LoadMoreBtn from "./../LoadMoreBtn/LoadMoreBtn.jsx";
-import { Toaster } from "react-hot-toast";
-import css from "./App.module.css";
+import ImageModal from "./../ImageModal/ImageModal.jsx";
 
 export default function App() {
   const [images, setImages] = useState([]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const [showBtn, setShowBtn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [totalImages, setTotalImages] = useState(0);
-
   const [isError, setIsError] = useState(false);
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [imageOfModal, setImageOfModal] = useState("");
 
   useEffect(() => {
-    if (query === "") return;
+    if (!query) return;
 
     async function asyncWrapper() {
       try {
         setIsLoading(true);
-        const result = await getPhotos(query, page);
-        console.log(result);
-        setImages((prevState) => [...prevState, ...result.results]);
-        setTotalImages(result.total);
+        setIsError(false);
+        const { results, total_pages } = await getPhotos(query, page);
+        setImages((prevState) => [...prevState, ...results]);
+        setShowBtn(total_pages && total_pages !== page);
       } catch (error) {
         setIsError(true);
       } finally {
@@ -40,23 +41,47 @@ export default function App() {
     setQuery(query);
     setImages([]);
     setPage(1);
-    setTotalImages(0);
   };
 
   const onHandleLoadMore = () => {
     setPage(page + 1);
   };
 
+  function openModal() {
+    setIsOpen(true);
+  }
+
+  function onAfterOpen(image) {
+    setImageOfModal(image);
+  }
+
+  function closeModal() {
+    setIsOpen(false);
+  }
+
   return (
-    <div className={css.container}>
+    <div>
       <SearchBar onSubmit={getQuery} />
-      {images.length > 0 && <ImageGallery images={images} />}
-      {images.length < totalImages && !isLoading && (
-        <LoadMoreBtn onClick={onHandleLoadMore}>Load more</LoadMoreBtn>
+      {isError && <ErrorMessage />}
+      <Toaster position="top-center" reverseOrder={false} />
+      {images.length > 0 && (
+        <ImageGallery
+          images={images}
+          openModal={openModal}
+          onAfterOpen={onAfterOpen}
+        />
       )}
       {isLoading && <Loader />}
-      {isError && <ErrorMessage />}
-      <Toaster />
+      {showBtn && (
+        <LoadMoreBtn onClick={onHandleLoadMore}>Load more</LoadMoreBtn>
+      )}
+      {modalIsOpen && (
+        <ImageModal
+          image={imageOfModal}
+          closeModal={closeModal}
+          modalIsOpen={modalIsOpen}
+        />
+      )}
     </div>
   );
 }
